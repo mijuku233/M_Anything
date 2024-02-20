@@ -21,7 +21,6 @@ class QQ_VAEEncode:
         if pixels is None or vae is None:
             return (latent,)
         else:
-            pixels = VAEEncode.vae_encode_crop_pixels(pixels)
             t = vae.encode(pixels[:,:,:,:3])
             return ({"samples":t}, )
       
