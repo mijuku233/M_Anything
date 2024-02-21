@@ -50,10 +50,6 @@ class ZipImages:
 
         zip_filename = os.path.join(full_output_folder, f'{filename_prefix}.zip')
 
-        # Check if the zip file exists, if not create it
-        if not os.path.exists(zip_filename):
-            with zipfile.ZipFile(zip_filename, 'w') as zip_file:
-                pass
         # Open the zip file once
         with zipfile.ZipFile(zip_filename, 'a') as zip_file:
             for idx, image in enumerate(images):
