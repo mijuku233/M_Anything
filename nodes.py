@@ -17,9 +17,9 @@ class QQ_VAEEncode:
             }
         }
 
-    CATEGORY = "latent"
     RETURN_TYPES = ("LATENT",)
     FUNCTION = "encode"
+    CATEGORY = "QQ_Nodes"
 
     def encode(self, latent=None, pixels=None, vae=None):
         if pixels is None or vae is None:
@@ -41,7 +41,7 @@ class ZipImages:
     RETURN_TYPES = ()
     FUNCTION = "save_images"
     OUTPUT_NODE = True
-    CATEGORY = "image"
+    CATEGORY = "QQ_Nodes"
 
     def save_images(self, images, filename_prefix="ComfyUI"):
         filename_prefix += self.prefix_append
@@ -71,12 +71,43 @@ class ZipImages:
 
         return {"images": None}
 
+class QQ_Pipe:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {},
+            "optional": {
+                "basic_pipe": ("BASIC_PIPE",),
+                "model": ("MODEL",),
+                "clip": ("CLIP",),
+                "vae": ("VAE",),
+                "positive": ("CONDITIONING",),
+                "negative": ("CONDITIONING",),
+            },
+        }
+
+    RETURN_TYPES = ("BASIC_PIPE", "MODEL", "CLIP", "VAE", "CONDITIONING", "CONDITIONING",)
+    RETURN_NAMES = ("basic_pipe", "MODEL", "CLIP", "VAE", "Positive", "Negative",)
+    FUNCTION = "doit"
+    CATEGORY = "QQ_Nodes"
+
+    def doit(self, basic_pipe=(None, None, None, None, None),
+             model=None, clip=None, vae=None, positive=None, negative=None):
+
+        r_model, r_clip, res_vae, r_positive, r_negative = basic_pipe
+
+        pipe = (model or r_model, clip or r_clip, vae or res_vae, positive or r_positive, negative or r_negative)
+
+        return (pipe, *pipe,)
+
 
 NODE_CLASS_MAPPINGS = {
     "QQ_VAEEncode": QQ_VAEEncode,
     "ZipImages": ZipImages,
+    "QQ_Pipe": QQ_Pipe,
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
     "QQ_VAEEncode": "VAEEncode_QQ",
     "ZipImages": "ZipImages",
+    "QQ_Pipe": "QQ_Pipe",
 }
