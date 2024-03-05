@@ -5,31 +5,37 @@ import folder_paths
 import zipfile
 import io
 import torch
-from nodes import VAEEncode
+from nodes import VAEEncode, InpaintModelConditioning
 
-class QQ_VAEEncode:
+
+class VAEEncode_QQ:
     @classmethod
     def INPUT_TYPES(cls):
         return {
-            "required": {},
-            "optional": {
-                "latent": ("LATENT",), "pixels": ("IMAGE",), "vae": ("VAE",)
-            }
+            "required": {"vae": ("VAE",), "positive": ("CONDITIONING", ), "negative": ("CONDITIONING", ), },
+            "optional": {"latent": ("LATENT",), "pixels": ("IMAGE",), "mask": ("MASK", ), }
         }
 
-    RETURN_TYPES = ("LATENT",)
+    RETURN_TYPES = ("CONDITIONING", "CONDITIONING", "LATENT",)
+    RETURN_NAMES = ("positive", "negative", "latent")
     FUNCTION = "encode"
     CATEGORY = "QQ_Nodes"
 
-    def encode(self, latent=None, pixels=None, vae=None):
-        if pixels is None or vae is None:
-            return (latent,)
+    def encode(self, vae, positive, negative, latent=None, pixels=None, mask=None):
+
+        if pixels is None:
+            return (positive, negative, latent,)
+        elif mask is None:
+            enc = VAEEncode()
+            out = enc.encode(vae, pixels)
+            return (positive, negative, out[0],)
         else:
-            t = vae.encode(pixels[:, :, :, :3])
-            return ({"samples": t},)
+            i_enc = InpaintModelConditioning()
+            i_out = i_enc.encode(positive, negative, pixels, vae, mask)
+            return (i_out[0], i_out[1], i_out[2],)
 
 
-class ZipImages:
+class ZipImages_QQ:
     def __init__(self):
         self.output_dir = folder_paths.get_output_directory()
         self.prefix_append = ""
@@ -71,7 +77,8 @@ class ZipImages:
 
         return {"images": None}
 
-class QQ_Pipe:
+
+class Pipe_QQ:
     @classmethod
     def INPUT_TYPES(s):
         return {
@@ -102,12 +109,12 @@ class QQ_Pipe:
 
 
 NODE_CLASS_MAPPINGS = {
-    "QQ_VAEEncode": QQ_VAEEncode,
-    "ZipImages": ZipImages,
-    "QQ_Pipe": QQ_Pipe,
+    "VAEEncode_QQ": VAEEncode_QQ,
+    "ZipImages_QQ": ZipImages_QQ,
+    "Pipe_QQ": Pipe_QQ,
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "QQ_VAEEncode": "VAEEncode_QQ",
-    "ZipImages": "ZipImages",
-    "QQ_Pipe": "QQ_Pipe",
+    "VAEEncode_QQ": "VAEEncode_QQ",
+    "ZipImages_QQ": "ZipImages_QQ",
+    "Pipe_QQ": "Pipe_QQ",
 }
