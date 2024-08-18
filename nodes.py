@@ -5,7 +5,41 @@ import folder_paths
 import zipfile
 import io
 import torch
-from nodes import VAEEncode, InpaintModelConditioning
+from nodes import VAEEncode, InpaintModelConditioning, SaveImage, PreviewImage
+
+
+class ImageViewer_QQ:
+    def __init__(self):
+        self.file_name = ""
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "images": ("IMAGE", ),
+                "file_name": ("STRING", {"default": "", "tooltip": "Fill in the file_name to save the images. Leave empty to preview the images."}),
+            },
+            "hidden": {
+                "prompt": "PROMPT",
+                "extra_pnginfo": "EXTRA_PNGINFO",
+            },
+        }
+
+    RETURN_TYPES = ()
+    FUNCTION = "save_images"
+
+    OUTPUT_NODE = True
+
+    CATEGORY = "QQ_Nodes"
+    DESCRIPTION = "Preview or save images."
+
+    def process_images(self, images, file_name="", prompt=None, extra_pnginfo=None):
+        if file_name:
+            saver = SaveImage()
+            return saver.save_images(images, file_name, prompt, extra_pnginfo)
+        else:
+            previewer = PreviewImage()
+            return previewer.save_images(images, file_name, prompt, extra_pnginfo)
 
 
 class VAEEncode_QQ:
@@ -105,11 +139,13 @@ class Pipe_QQ:
 
 
 NODE_CLASS_MAPPINGS = {
+    "ImageViewer_QQ": ImageViewer_QQ,
     "VAEEncode_QQ": VAEEncode_QQ,
     "ZipImages_QQ": ZipImages_QQ,
     "Pipe_QQ": Pipe_QQ,
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
+    "ImageViewer_QQ": "ImageViewer_QQ",
     "VAEEncode_QQ": "VAEEncode_QQ",
     "ZipImages_QQ": "ZipImages_QQ",
     "Pipe_QQ": "Pipe_QQ",
