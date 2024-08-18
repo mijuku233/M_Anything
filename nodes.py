@@ -23,16 +23,12 @@ class VAEEncode_QQ:
 
     def encode(self, vae, positive, negative, latent=None, pixels=None, mask=None):
 
-        if pixels is None:
-            return (positive, negative, latent,)
-        elif mask is None:
-            enc = VAEEncode()
-            out = enc.encode(vae, pixels)
-            return (positive, negative, out[0],)
-        else:
-            i_enc = InpaintModelConditioning()
-            i_out = i_enc.encode(positive, negative, pixels, vae, mask)
-            return (i_out[0], i_out[1], i_out[2],)
+        if pixels is not None:
+            if mask is not None:
+                positive, negative, latent = InpaintModelConditioning().encode(positive, negative, pixels, vae, mask)
+            else:
+                latent = VAEEncode().encode(vae, pixels)[0]
+        return (positive, negative, latent,)
 
 
 class ZipImages_QQ:
