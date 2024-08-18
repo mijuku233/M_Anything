@@ -26,7 +26,7 @@ class ImageViewer_QQ:
         }
 
     RETURN_TYPES = ()
-    FUNCTION = "save_images"
+    FUNCTION = "process_images"
 
     OUTPUT_NODE = True
 
