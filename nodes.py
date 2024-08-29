@@ -120,20 +120,21 @@ class Pipe_QQ:
                 "vae": ("VAE",),
                 "positive": ("CONDITIONING",),
                 "negative": ("CONDITIONING",),
+                "latent": ("LATENT",),
             },
         }
 
-    RETURN_TYPES = ("BASIC_PIPE", "MODEL", "CLIP", "VAE", "CONDITIONING", "CONDITIONING",)
-    RETURN_NAMES = ("basic_pipe", "MODEL", "CLIP", "VAE", "Positive", "Negative",)
+    RETURN_TYPES = ("BASIC_PIPE", "MODEL", "CLIP", "VAE", "CONDITIONING", "CONDITIONING", "LATENT",)
+    RETURN_NAMES = ("basic_pipe", "MODEL", "CLIP", "VAE", "Positive", "Negative", "Latent",)
     FUNCTION = "doit"
     CATEGORY = "QQ_Nodes"
 
-    def doit(self, basic_pipe=(None, None, None, None, None),
-             model=None, clip=None, vae=None, positive=None, negative=None):
+    def doit(self, basic_pipe=(None, None, None, None, None, None),
+             model=None, clip=None, vae=None, positive=None, negative=None, latent=None):
 
-        r_model, r_clip, res_vae, r_positive, r_negative = basic_pipe
+        r_model, r_clip, res_vae, r_positive, r_negative, r_latent = basic_pipe
 
-        pipe = (model or r_model, clip or r_clip, vae or res_vae, positive or r_positive, negative or r_negative)
+        pipe = (model or r_model, clip or r_clip, vae or res_vae, positive or r_positive, negative or r_negative, latent or r_latent)
 
         return (pipe, *pipe,)
 
