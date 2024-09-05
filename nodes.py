@@ -6,6 +6,45 @@ import zipfile
 import io
 import torch
 from nodes import VAEEncode, InpaintModelConditioning, SaveImage, PreviewImage
+from PIL import Image
+
+
+class ConstrainImage_QQ:
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "images": ("IMAGE",),
+                "max_size": ("INT", {"default": 1920, "min": 0, "max": 16384}),
+            },
+        }
+
+    RETURN_TYPES = ("IMAGE",)
+    FUNCTION = "constrain_image"
+    CATEGORY = "QQ_Nodes"
+
+    def constrain_image(self, images, max_size):
+        results = []
+        for image in images:
+            i = 255. * image.cpu().numpy()
+            img = Image.fromarray(np.clip(i, 0, 255).astype(np.uint8)).convert("RGB")
+
+            cur_width, cur_height = img.size
+            if cur_width > cur_height:
+                new_width = max_size
+                new_height = int(cur_height * (max_size / cur_width))
+            else:
+                new_height = max_size
+                new_width = int(cur_width * (max_size / cur_height))
+
+            resized_image = img.resize((new_width, new_height), Image.LANCZOS)
+            resized_image = np.array(resized_image).astype(np.float32) / 255.0
+            resized_image = torch.from_numpy(resized_image)[None,]
+            results.append(resized_image)
+            all_images = torch.cat(results, dim=0)
+
+        return (all_images, all_images.size(0),)
 
 
 class ImageViewer_QQ:
@@ -140,12 +179,14 @@ class Pipe_QQ:
 
 
 NODE_CLASS_MAPPINGS = {
+    "ConstrainImage_QQ": ConstrainImage_QQ,
     "ImageViewer_QQ": ImageViewer_QQ,
     "VAEEncode_QQ": VAEEncode_QQ,
     "ZipImages_QQ": ZipImages_QQ,
     "Pipe_QQ": Pipe_QQ,
 }
 NODE_DISPLAY_NAME_MAPPINGS = {
+    "ConstrainImage_QQ": "ConstrainImage_QQ",
     "ImageViewer_QQ": "ImageViewer_QQ",
     "VAEEncode_QQ": "VAEEncode_QQ",
     "ZipImages_QQ": "ZipImages_QQ",
